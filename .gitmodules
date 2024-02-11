@@ -1,0 +1,3 @@
+[submodule "vendor/Codex"]
+	path = vendor/Codex
+	url = https://github.com/NeddX/Codex

@@ -1,15 +1,22 @@
 #include <iostream>
 #include <Engine/Core/EntryPoint.h>
 
-class Chessodex : public codex::Application
-{
-public:
-	using codex::Application::Application;
-};
+#include "Game/GameLayer.h"
+
+namespace chx {
+	class Chessodex : public codex::Application
+	{
+	public:
+		using codex::Application::Application;
+
+	public:
+		void Init() override { PushLayer(new chx::GameLayer); }
+	};
+} // namespace chx
 
 codex::Application* codex::CreateApplication(codex::ApplicationCLIArgs args)
 {
-	return new Chessodex{ codex::ApplicationProperties 
+	return new chx::Chessodex{ codex::ApplicationProperties 
 		{
 		.name = "Chessodex",
 		.cwd = "./",

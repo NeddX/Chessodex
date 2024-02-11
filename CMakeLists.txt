@@ -20,3 +20,4 @@ target_link_libraries(Chessodex CodexEngine)
 
 # Installation.
 install(TARGETS Chessodex DESTINATION bin)
+add_definitions(-DCHX_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")

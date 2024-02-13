@@ -1,32 +1,53 @@
-#include <iostream>
 #include <Engine/Core/EntryPoint.h>
+#include <iostream>
 
 #include "Game/GameLayer.h"
 
-namespace chx {
-	class Chessodex : public codex::Application
-	{
-	public:
-		using codex::Application::Application;
+#include "ChessodexApp.h"
 
-	public:
-		void Init() override { PushLayer(new chx::GameLayer); }
-	};
+namespace chx {
+    namespace fs = std::filesystem;
+
+    fs::path Chessodex::m_AppDataPath{};
+    fs::path Chessodex::m_VarAppDataPath{};
+
+    void Chessodex::Init()
+    {
+#ifdef CX_PLATFORM_LINUX
+        m_AppDataPath = fs::path(CHX_INSTALL_DIR) / fs::path("share/Chessodex");
+#elif defined(CX_PLATFORM_WINDOWS)
+        m_AppDataPath = fs::path(CHX_INSTALL_DIR) / fs::path("bin");
+#endif
+
+        m_VarAppDataPath =
+            fs::path(GetSpecialFolder(SpecialFolder::UserApplicationData)) / fs::path("Chessodex/");
+
+        if (!fs::exists(m_VarAppDataPath))
+        {
+            try
+            {
+                fs::create_directory(m_VarAppDataPath);
+            }
+            catch (const std::exception& ex)
+            {
+                fmt::println("This should have not happened but it did.");
+            }
+        }
+
+        // Push our layer.
+        PushLayer(new chx::GameLayer);
+    }
 } // namespace chx
 
 codex::Application* codex::CreateApplication(codex::ApplicationCLIArgs args)
 {
-	return new chx::Chessodex{ codex::ApplicationProperties 
-		{
-		.name = "Chessodex",
-		.cwd = "./",
-		.args = std::move(args),
-		.windowProperties = {
-			.width = 800,
-			.height = 600,
-			.frameCap = 300,
-			.flags = codex::WindowFlags::Visible | codex::WindowFlags::Resizable,
-			.vsync = false
-		}
-		} };
+    return new chx::Chessodex{ codex::ApplicationProperties{
+        .name             = "Chessodex",
+        .cwd              = "./",
+        .args             = std::move(args),
+        .windowProperties = { .width    = 800,
+                              .height   = 600,
+                              .frameCap = 300,
+                              .flags    = codex::WindowFlags::Visible | codex::WindowFlags::Resizable,
+                              .vsync    = false } } };
 }

@@ -92,53 +92,65 @@ for i in range(0, len(args)):
         auxiliary_action = Action.Install
 
 if action == Action.Build:
+    cmake_gen = True
+
     if preset == None:
+        possible_builds = os.listdir("./builds/")
         presets = get_cmake_presets()
         if not presets:
             panic(f'Platform not supported.')
-        log(f'Defaulting to: {presets[0]}')
-        preset = presets[0]
 
-    res = run(f'cmake --preset={preset}', stdout=stdoutput, stderr=stdoutput)
-    if res.returncode != 0:
-        if not preset in get_cmake_presets():
-            panic(f'Build failed because \'{preset}\' is not an actual preset.')
+        common_el = set(possible_builds).intersection(presets)
+        if common_el:
+            preset = list(common_el)[0] # LOL
+            cmake_gen = False # Assume the user has already generated the build files.
+            log(f'Building: {preset}')
+
+        else:
+            log(f'Defaulting to: {presets[0]}')
+            preset = presets[0]
+
+
+    if cmake_gen:
+        Chrono.begin()
+        log('CMake generation started.')
+        res = run(f'cmake --preset={preset}', stdout=stdoutput, stderr=stdoutput)
+        if res.returncode != 0:
+            if not preset in get_cmake_presets():
+                panic(f'Build failed because \'{preset}\' is not an actual preset.')
 
         else:
             panic('Build failed for unknown reason(s).')
 
-    else:
-        Chrono.begin()
-        log('CMake generation started.')
-        res = run(f'cmake --preset={preset}', stdout=stdoutput)
         if res.returncode != 0:
             panic('CMake generation unexpectedly failed.')
 
         elapsed = Chrono.end()
         log('CMake generation finished. Took: ' + '{:.2f}ms'.format(elapsed))
+
+    Chrono.begin()
+    res = run(f'cmake --build builds/{preset}' + (' --parallel' if parallel else ''), stdout=stdoutput)
+    if res.returncode != 0:
+        panic('CMake build unexpectedly failed.')
+
+    elapsed = Chrono.end()
+    log(f'CMake build finished. Took: ' + '{:.2f}ms'.format(elapsed))
+
+    #  Might write a separate script for installation.
+    if auxiliary_action == Action.Install:
+        log('CMake installation started.')
         Chrono.begin()
-        res = run(f'cmake --build builds/{preset}' + (' --parallel' if parallel else ''), stdout=stdoutput)
+
+        if platform.system() in ['Linux', 'Darwin']:
+            res = run(f'sudo cmake --install builds/{preset}', stdout=stdoutput)
+        elif platform.system() == 'Windows':
+            panic("I haven't figured out how to ask for admin privileges on python for windows yet")
+
         if res.returncode != 0:
-            panic('CMake build unexpectedly failed.')
+            panic('CMake install unexpectedly failed.')
 
         elapsed = Chrono.end()
-        log(f'CMake build finished. Took: ' + '{:.2f}ms'.format(elapsed))
-
-        #  Might write a separate script for installation.
-        if auxiliary_action == Action.Install:
-            log('CMake installation started.')
-            Chrono.begin()
-
-            if platform.system() in ['Linux', 'Darwin']:
-                res = run(f'sudo cmake --install builds/{preset}', stdout=stdoutput)
-            elif platform.system() == 'Windows':
-                panic("I haven't figured out how to ask for admin privileges on python for windows yet")
-
-            if res.returncode != 0:
-                panic('CMake install unexpectedly failed.')
-
-            elapsed = Chrono.end()
-            log(f'CMake installation finished. Took: ' + '{:.2f}ms'.format(elapsed))
+        log(f'CMake installation finished. Took: ' + '{:.2f}ms'.format(elapsed))
 
 elif action == Action.Clear:
     if preset == None:

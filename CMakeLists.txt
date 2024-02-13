@@ -20,4 +20,13 @@ target_link_libraries(Chessodex CodexEngine)
 
 # Installation.
 install(TARGETS Chessodex DESTINATION bin)
+if (DEFINED CX_PLATFORM_WINDOWS)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/" DESTINATION bin)
+elseif(DEFINED CX_PLATFORM_UNIX)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+          DESTINATION share/${CMAKE_PROJECT_NAME})
+endif()
 add_definitions(-DCHX_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}")
+
+# Misc.
+target_include_directories(Chessodex PRIVATE "src/")

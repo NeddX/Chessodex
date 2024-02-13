@@ -95,21 +95,25 @@ if action == Action.Build:
     cmake_gen = True
 
     if preset == None:
-        possible_builds = os.listdir("./builds/")
+        possible_builds = None
+        common_el = None
+        if os.path.isdir("./builds/"):
+            possible_builds = os.listdir("./builds/")
+
         presets = get_cmake_presets()
         if not presets:
             panic(f'Platform not supported.')
 
-        common_el = set(possible_builds).intersection(presets)
+        if possible_builds:
+            common_el = set(possible_builds).intersection(presets)
+
         if common_el:
             preset = list(common_el)[0] # LOL
             cmake_gen = False # Assume the user has already generated the build files.
             log(f'Building: {preset}')
-
         else:
             log(f'Defaulting to: {presets[0]}')
             preset = presets[0]
-
 
     if cmake_gen:
         Chrono.begin()
@@ -118,12 +122,8 @@ if action == Action.Build:
         if res.returncode != 0:
             if not preset in get_cmake_presets():
                 panic(f'Build failed because \'{preset}\' is not an actual preset.')
-
-        else:
-            panic('Build failed for unknown reason(s).')
-
-        if res.returncode != 0:
-            panic('CMake generation unexpectedly failed.')
+            else:
+                panic('CMake generation failed for unknown reason(s).')
 
         elapsed = Chrono.end()
         log('CMake generation finished. Took: ' + '{:.2f}ms'.format(elapsed))
@@ -131,7 +131,7 @@ if action == Action.Build:
     Chrono.begin()
     res = run(f'cmake --build builds/{preset}' + (' --parallel' if parallel else ''), stdout=stdoutput)
     if res.returncode != 0:
-        panic('CMake build unexpectedly failed.')
+        panic('Build failed for unknown reason(s).')
 
     elapsed = Chrono.end()
     log(f'CMake build finished. Took: ' + '{:.2f}ms'.format(elapsed))

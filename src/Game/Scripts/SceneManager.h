@@ -23,8 +23,13 @@ namespace chx {
         };
         enum PieceColour : codex::u8
         {
-            White = 8,
-            Black = 16
+            White = 0,
+            Black = 128
+        };
+        struct MoveInfo
+        {
+            bool valid = false;
+            bool doesEat = false;
         };
 
     private:
@@ -34,14 +39,20 @@ namespace chx {
         std::vector<codex::Entity>                                                 m_BlackPieces{};
         codex::f32                                                                 m_TileSize = 60.0f;
         codex::u32                                                                 m_BoardSize = 8;
-        std::array<Piece, 8 * 8>                                                   m_Board{Piece::None};
+        std::array<Piece, 8 * 8>                                                   m_Board;
+        bool                                                                       m_WhitesTurn = false;
 
     private:
         void          Init();
         void          Update(const codex::f32 deltaTime);
         codex::Entity CreateEntity(const std::string_view tag = "default tag");
         void          CreateBoard();
-        codex::Entity CreatePiece(const char piece, const bool is_white, const codex::Vector3f pos);
+        codex::Entity CreatePiece(const char piece, const bool isWhite, const codex::Vector3f pos);
         void          CreatePieces(const std::string_view fen);
+        MoveInfo      ValidateMove(const codex::Vector2 boardPos, const codex::Vector2 boardTargetPos) const noexcept;
+        void          TryMakeMove(codex::Entity piece, const codex::Vector2 pos, const codex::Vector2 targetPos) noexcept;
+    
+    public:
+        friend char PieceTypeToChar(const Piece piece) noexcept;
     };
 } // namespace chx

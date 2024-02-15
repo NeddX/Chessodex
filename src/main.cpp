@@ -45,9 +45,10 @@ codex::Application* codex::CreateApplication(codex::ApplicationCLIArgs args)
         .name             = "Chessodex",
         .cwd              = "./",
         .args             = std::move(args),
-        .windowProperties = { .width    = 800,
-                              .height   = 600,
+        .windowProperties = { .title    = "Chessodex",
+                              .width    = 800,
+                              .height   = 520,
                               .frameCap = 300,
-                              .flags    = codex::WindowFlags::Visible | codex::WindowFlags::Resizable,
+                              .flags    = codex::WindowFlags::Visible,
                               .vsync    = false } } };
 }

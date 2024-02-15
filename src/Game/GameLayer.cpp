@@ -8,6 +8,23 @@ namespace chx {
     namespace fs = std::filesystem;
     CODEX_USE_ALL_NAMESPACES()
 
+    codex::ResRef<codex::graphics::Shader> GameLayer::m_BatchShader{};
+    codex::mem::Box<codex::Camera>         GameLayer::m_Camera{};
+    codex::mem::Box<mgl::FrameBuffer>      GameLayer::m_Framebuffer{};
+    codex::mem::Box<codex::Scene>          GameLayer::m_Scene{};
+    codex::mem::Box<SceneManager>          GameLayer::m_SceneManager{};
+    std::array<codex::Vector2f, 2>         GameLayer::m_ViewportBounds;
+
+    mgl::FrameBuffer& GameLayer::GetPrimaryFrameBuffer() noexcept
+    {
+        return *m_Framebuffer;
+    }
+
+    std::array<Vector2f, 2>& GameLayer::GetViewportBounds() noexcept
+    {
+        return m_ViewportBounds;
+    }
+
     void GameLayer::OnAttach()
     {
         // Initialization stuff here.
@@ -35,7 +52,7 @@ namespace chx {
         const auto width  = Application::GetWindow().GetWidth();
         const auto height = Application::GetWindow().GetHeight();
         m_BatchShader     = Resources::Load<Shader>(Chessodex::GetAppDataPath() / "GL Shaders/batchRenderer.glsl");
-        m_BatchShader->CompileShader({ { "CX_MAX_SLOT_COUNT", "16" } });
+        m_BatchShader->CompileShader({ { "CX_MAX_SLOT_COUNT", "8" } });
         m_Camera = Box<Camera>::New(width, height);
 
         Renderer::Init(width, height);
@@ -49,23 +66,20 @@ namespace chx {
 
         m_Scene = Box<Scene>::New();
 
-        // Create the scene manager entity.
-        m_SceneManager = m_Scene->CreateEntity("scene_manager");
-        m_SceneManager.AddComponent<NativeBehaviourComponent>().Attach(new SceneManager);
-
-        // Maually call the init method on all behaviour components.
-        auto entities = m_Scene->GetAllEntitiesWithComponent<NativeBehaviourComponent>();
-        for (auto& e : entities)
-        {
-            auto& c = e.GetComponent<NativeBehaviourComponent>();
-            c.Start();
-        }
+        // Create the scene manager.
+        m_SceneManager = Box<SceneManager>::New();
+        m_SceneManager->Init();
     }
 
     void GameLayer::OnDetach()
     {
         BatchRenderer2D::Destroy();
         Renderer::Destroy();
+    }
+
+    Scene& GameLayer::GetCurrentScene() noexcept
+    {
+        return *m_Scene;
     }
 
     void GameLayer::Update(const f32 deltaTime)
@@ -84,6 +98,9 @@ namespace chx {
         m_Scene->Update(deltaTime);
         BatchRenderer2D::End();
 
+        // Update the scene.
+        m_SceneManager->Update(deltaTime);
+
         m_Framebuffer->Unbind();
     }
 
@@ -92,13 +109,20 @@ namespace chx {
         // Draw ImGUI widgets here.
         auto& io = ImGui::GetIO();
 
-        // Enable docking for the main window.
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
-        // Chessboard
+        // Chessboard window
         {
             ImGui::Begin("Chessboard");
-            static ImVec2 viewport_window_size{};
+            const auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+            const auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+            const auto viewport_offset     = ImGui::GetWindowPos();
+            m_ViewportBounds[0]            = { viewport_min_region.x + viewport_offset.x,
+                                               viewport_min_region.y + viewport_offset.y };
+            m_ViewportBounds[1]            = { viewport_max_region.x + viewport_offset.x,
+                                               viewport_max_region.y + viewport_offset.y };
+
+            static ImVec2 viewport_window_size;
             ImVec2        current_viewport_window_size = ImGui::GetContentRegionAvail();
             if (viewport_window_size.x != current_viewport_window_size.x ||
                 viewport_window_size.y != current_viewport_window_size.y)
@@ -112,10 +136,21 @@ namespace chx {
             ImGui::End();
         }
 
-        // Statistics
+        // Statistics window
         {
             ImGui::Begin("Statistics");
             ImGui::Text("Statistics and stuff");
+            ImGui::End();
+        }
+
+        // Render info window.
+        {
+            ImGui::Begin("Render Info");
+            ImGui::Text("Renderer information");
+            ImGui::Text("FPS: %u", Application::GetFps());
+            ImGui::Text("Delta time: %f", Application::GetDelta());
+            ImGui::Text("Batch count: %zu", BatchRenderer2D::GeBatchCount());
+            ImGui::Text("Total quad count: %zu", BatchRenderer2D::GetQuadCount());
             ImGui::End();
         }
     }

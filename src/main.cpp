@@ -13,7 +13,7 @@ namespace chx {
 
     void Chessodex::Init()
     {
-#ifdef CX_PLATFORM_LINUX
+#ifdef CX_PLATFORM_UNIX
         m_AppDataPath = fs::path(CHX_INSTALL_DIR) / fs::path("share/Chessodex");
 #elif defined(CX_PLATFORM_WINDOWS)
         m_AppDataPath = fs::path(CHX_INSTALL_DIR) / fs::path("bin");

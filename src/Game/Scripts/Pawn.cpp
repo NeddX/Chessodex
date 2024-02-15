@@ -5,13 +5,12 @@
 namespace chx::pawn {
     CODEX_USE_ALL_NAMESPACES()
 
-    void Pawn::Init() override
+    void Pawn::Init()
     {
         fmt::println("I am a pawn");
     }
 
     void Pawn::Update(const f32 deltaTime)
     {
-
     }
-} // namespace chx
+} // namespace chx::pawn

@@ -5,49 +5,39 @@
 
 #include "Pawn.h"
 
-#define RgbToNormalized(r, g, b, a) Vector4f { r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f }
+#define RgbToNormalized(r, g, b, a)                                                                                    \
+    Vector4f                                                                                                           \
+    {                                                                                                                  \
+        r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f                                                                 \
+    }
 
 namespace chx {
     CODEX_USE_ALL_NAMESPACES()
 
     namespace fs = std::filesystem;
 
-    static auto LoadSprite(const fs::path& path)
+    auto LoadSprite(const fs::path& path)
     {
         TextureProperties props;
         props.filterMode = TextureFilterMode::Linear;
         return Resources::Load<Texture2D>(Chessodex::GetAppDataPath() / "Sprites/" / path, props);
     }
-    static char PieceTypeToChar(const SceneManager::Piece piece) noexcept
+    char PieceTypeToChar(const SceneManager::Piece piece) noexcept
     {
-        char c{};
-        const auto piece_type = piece & ~(1 << sizeof(u8) - 1);
-        const bool is_white   = piece & (1 << sizeof(u8) - 1);
+        char       c{};
+        const auto piece_type = piece & ~(1 << (sizeof(u8) - 1));
+        const bool is_white   = piece & (1 << (sizeof(u8) - 1));
         switch (piece_type)
         {
             using enum SceneManager::Piece;
 
-            case King: 
-                c = 'k';
-                break;
-            case Queen: 
-                c = 'q'; 
-                break;
-            case Bishop: 
-                c = 'b'; 
-                break;
-            case Knight: 
-                c = 'n';
-                break;
-            case Rook: 
-                c = 'r';
-                break;
-            case Pawn: 
-                c = 'p';
-                break;
-            case None: 
-                c = 0;
-                break;
+            case King: c = 'k'; break;
+            case Queen: c = 'q'; break;
+            case Bishop: c = 'b'; break;
+            case Knight: c = 'n'; break;
+            case Rook: c = 'r'; break;
+            case Pawn: c = 'p'; break;
+            case None: c = 0; break;
         }
         return (!c) ? c : (is_white) ? std::toupper(c) : c;
     }
@@ -65,7 +55,7 @@ namespace chx {
         std::fill(m_Board.begin(), m_Board.end(), Piece::None);
 
         CreateBoard();
-        //CreatePieces("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w -- 7 4");
+        // CreatePieces("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w -- 7 4");
         CreatePieces("rnbkqbnr/pppppppp/////PPPPPPPP/RNBKQBNR");
     }
 
@@ -82,7 +72,6 @@ namespace chx {
         i32      mouse_x       = (i32)mx;
         i32      mouse_y       = (i32)my;
 
-        
         static Entity    selected_piece = Entity::None();
         static Vector3f* piece_pos      = nullptr;
         static Vector3f  piece_prev_pos;
@@ -91,11 +80,11 @@ namespace chx {
             mouse_y <= (i32)viewport_size.y)
         {
             Vector2f scale{ framebuffer.GetProperties().width / viewport_size.x,
-                               framebuffer.GetProperties().height / viewport_size.y };
+                            framebuffer.GetProperties().height / viewport_size.y };
             pos_in_viewport = { mouse_x, viewport_size.y - mouse_y };
 
             auto pos_in_frame = pos_in_viewport * scale;
-            pos_in_frame = glm::round(pos_in_frame);
+            pos_in_frame      = glm::round(pos_in_frame);
 
             if (Input::IsMouseDragging())
             {
@@ -107,7 +96,7 @@ namespace chx {
             }
             else
             {
-                const auto id = framebuffer.ReadPixel(1, (i32)pos_in_frame.x, (i32)pos_in_frame.y);
+                const auto id  = framebuffer.ReadPixel(1, (i32)pos_in_frame.x, (i32)pos_in_frame.y);
                 selected_piece = Entity(id, &GameLayer::GetCurrentScene());
                 if (selected_piece)
                 {
@@ -119,7 +108,7 @@ namespace chx {
                     else
                     {
                         selected_piece.GetComponent<SpriteRendererComponent>().GetSprite().GetZIndex() = 10;
-                        piece_pos = &selected_piece.GetComponent<TransformComponent>().position;
+                        piece_pos      = &selected_piece.GetComponent<TransformComponent>().position;
                         piece_prev_pos = *piece_pos;
                     }
                 }
@@ -140,7 +129,7 @@ namespace chx {
 
                 // Reset.
                 selected_piece.GetComponent<SpriteRendererComponent>().GetSprite().GetZIndex() = 1;
-                selected_piece = Entity::None();
+                selected_piece                                                                 = Entity::None();
             }
         }
     }
@@ -177,20 +166,20 @@ namespace chx {
 
     codex::Entity SceneManager::CreatePiece(const char piece, const bool is_white, const Vector3f pos)
     {
-        static auto piece_tile_size      = 333.0f;
-        static auto sprite           = Sprite(m_Resources["pieces"]);
+        static auto piece_tile_size = 333.0f;
+        static auto sprite          = Sprite(m_Resources["pieces"]);
 
-        Entity entity                                      = Entity::None();
-        entity                                             = CreateEntity(fmt::format("{}_{},{}", (is_white) ? (char)std::toupper(piece) : piece, pos.x, pos.y));
-        entity.GetComponent<TransformComponent>().position = { m_TileSize / 2 + pos.x * m_TileSize, m_TileSize / 2 + pos.y * m_TileSize, 0.0f };
-        
-        
-        //entity.AddComponent<NativeBehaviourComponent>().New<pawn::Pawn>();
+        Entity entity = Entity::None();
+        entity = CreateEntity(fmt::format("{}_{},{}", (is_white) ? (char)std::toupper(piece) : piece, pos.x, pos.y));
+        entity.GetComponent<TransformComponent>().position = { m_TileSize / 2 + pos.x * m_TileSize,
+                                                               m_TileSize / 2 + pos.y * m_TileSize, 0.0f };
+
+        // entity.AddComponent<NativeBehaviourComponent>().New<pawn::Pawn>();
 
         Piece type = Piece::None;
 
         sprite.GetZIndex() = 1;
-        sprite.SetSize({ m_TileSize, m_TileSize }); 
+        sprite.SetSize({ m_TileSize, m_TileSize });
         switch (piece)
         {
             case 'k':
@@ -243,7 +232,7 @@ namespace chx {
             {
                 CreatePiece(std::tolower(c), std::isupper(c), pos);
                 ++pos.x;
-                //pos = (pos.x + 1 >= 8.0f) ? Vector3f{ 0.0f, ++pos.y, 0.0f } : Vector3f{ ++pos.x, pos.y, 0.0f };
+                // pos = (pos.x + 1 >= 8.0f) ? Vector3f{ 0.0f, ++pos.y, 0.0f } : Vector3f{ ++pos.x, pos.y, 0.0f };
             }
         }
     }
@@ -256,18 +245,17 @@ namespace chx {
     void SceneManager::TryMakeMove(Entity piece, const Vector2 pos, const Vector2 targetPos) noexcept
     {
         const Vector2 board_pos{ pos.x / m_TileSize, pos.y / m_TileSize };
-        const Vector2 target_board_pos{ targetPos.x / m_TileSize, targetPos.y / m_TileSize }; 
+        const Vector2 target_board_pos{ targetPos.x / m_TileSize, targetPos.y / m_TileSize };
         const auto    type        = m_Board[board_pos.y * m_BoardSize + board_pos.x];
         const auto    target_type = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x];
         const auto    move_info   = ValidateMove(pos, target_board_pos);
-        auto& piece_pos = piece.GetComponent<TransformComponent>().position;
+        auto&         piece_pos   = piece.GetComponent<TransformComponent>().position;
 
         if (move_info.valid)
         {
             if (move_info.doesEat)
             {
-                const auto fmt =
-                    fmt::format("{}_{},{}", PieceTypeToChar(target_type), pos.x, pos.y);
+                const auto fmt    = fmt::format("{}_{},{}", PieceTypeToChar(target_type), pos.x, pos.y);
                 const auto target = GameLayer::GetCurrentScene().GetAllEntitesWithTag(fmt);
 
                 fmt::println("Eating entity: {}", fmt);
@@ -286,7 +274,7 @@ namespace chx {
 
             // Update the piece inside the board.
             m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x] = type;
-            m_Board[board_pos.y * m_BoardSize + board_pos.x] = Piece::None;
+            m_Board[board_pos.y * m_BoardSize + board_pos.x]               = Piece::None;
 
             // Flip the turn.
             m_WhitesTurn = !m_WhitesTurn;

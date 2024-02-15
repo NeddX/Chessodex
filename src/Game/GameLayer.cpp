@@ -136,13 +136,6 @@ namespace chx {
             ImGui::End();
         }
 
-        // Statistics window
-        {
-            ImGui::Begin("Statistics");
-            ImGui::Text("Statistics and stuff");
-            ImGui::End();
-        }
-
         // Render info window.
         {
             ImGui::Begin("Render Info");
@@ -153,6 +146,8 @@ namespace chx {
             ImGui::Text("Total quad count: %zu", BatchRenderer2D::GetQuadCount());
             ImGui::End();
         }
+
+        m_SceneManager->ImGuiRender();
     }
 
     void GameLayer::OnEvent(Event& e)

@@ -51,12 +51,100 @@ namespace chx {
         m_Resources["solid_white"] = LoadSprite("solid_white.png");
         m_Resources["pieces"]      = LoadSprite("pieces.png");
 
-        // Fill the board with none's.
-        std::fill(m_Board.begin(), m_Board.end(), Piece::None);
+        // Create the scene.
+        Reset();
+    }
 
-        CreateBoard();
-        // CreatePieces("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w -- 7 4");
-        CreatePieces("rnbkqbnr/pppppppp/////PPPPPPPP/RNBKQBNR");
+    void SceneManager::ImGuiRender()
+    {
+        static int column_width = 100;
+
+        // Fancy pants.
+        {
+            ImGui::Begin("Customizer");
+
+            // Colour picker for the white tiles.
+            {
+                ImGui::Dummy(ImVec2(0.0f, 10.0f));
+                ImGui::Columns(2);
+                ImGui::SetColumnWidth(0, column_width);
+                ImGui::Text("White tile colour: ");
+                ImGui::NextColumn();
+
+                auto& colour = m_WhiteTiles[0].GetComponent<SpriteRendererComponent>().GetSprite().GetColour();
+                ImGuiColorEditFlags flags = 0;
+                flags |= ImGuiColorEditFlags_AlphaBar;
+                flags |= ImGuiColorEditFlags_DisplayRGB; // Override display mode
+                f32 temp_colour[4]{ colour.x, colour.y, colour.z, colour.w };
+                ImGui::ColorPicker4("##wtile_colour_picker", temp_colour, flags);
+                Vector4f res = glm::make_vec4(temp_colour);
+                if (res != colour)
+                {
+                    for (auto& e : m_WhiteTiles)
+                        e.GetComponent<SpriteRendererComponent>().GetSprite().GetColour() = res;
+                }
+
+                ImGui::Columns(1);
+            }
+
+            // Colour picker for the black tiles.
+            {
+                ImGui::Dummy(ImVec2(0.0f, 10.0f));
+                ImGui::Columns(2);
+                ImGui::SetColumnWidth(0, column_width);
+                ImGui::Text("Black tile colour: ");
+                ImGui::NextColumn();
+
+                auto& colour = m_BlackTiles[0].GetComponent<SpriteRendererComponent>().GetSprite().GetColour();
+                ImGuiColorEditFlags flags = 0;
+                flags |= ImGuiColorEditFlags_AlphaBar;
+                flags |= ImGuiColorEditFlags_DisplayRGB; // Override display mode
+                f32 temp_colour[4]{ colour.x, colour.y, colour.z, colour.w };
+                ImGui::ColorPicker4("##btile_colour_picker", temp_colour, flags);
+                Vector4f res = glm::make_vec4(temp_colour);
+                if (res != colour)
+                {
+                    for (auto& e : m_BlackTiles)
+                        e.GetComponent<SpriteRendererComponent>().GetSprite().GetColour() = res;
+                }
+
+                ImGui::Columns(1);
+            }
+
+            ImGui::End();
+        }
+
+        // Statistics window.
+        {
+            ImGui::Begin("Statistics");
+            ImGui::Text("%s", (m_WhitesTurn) ? "White's turn." : "Black's turn.");
+            ImGui::Text("Pawns eaten by White: %lu", m_EatenBlackPawns);
+            ImGui::Text("Pawns eaten by Black: %lu", m_EatenWhitePawns);
+
+            if (ImGui::Button("Reset"))
+                Reset();
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Load custom from FEN"))
+                ImGui::OpenPopup("new_fen_popup");
+
+            if (ImGui::BeginPopup("new_fen_popup", ImGuiWindowFlags_MenuBar))
+            {
+                static std::string fen_string{};
+                ImGui::Text("FEN string: ");
+                ImGui::SameLine();
+                ImGui::InputText("##fen_str", &fen_string);
+                ImGui::SameLine();
+                if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::Button("Submit"))
+                {
+                    Reset(fen_string);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+            ImGui::End();
+        }
     }
 
     void SceneManager::Update(const codex::f32 deltaTime)
@@ -149,19 +237,40 @@ namespace chx {
         {
             for (auto x = 0; x < board_size; ++x)
             {
-                m_Chessboard.push_back(CreateEntity(fmt::format("tile_{}_{}", x, y)));
+                const bool is_white = (x + y) % 2 == 0;
 
-                auto& c    = m_Chessboard.back().GetComponent<TransformComponent>();
+                auto tile = CreateEntity(fmt::format("tile_{},{}", x, y));
+                if (is_white)
+                    m_WhiteTiles.push_back(tile);
+                else
+                    m_BlackTiles.push_back(tile);
+
+                auto& c    = tile.GetComponent<TransformComponent>();
                 c.position = { m_TileSize / 2 + x * m_TileSize, m_TileSize / 2 + y * m_TileSize, 0.0f };
 
-                bool is_white = (x + y) % 2 == 0;
-
                 static auto sprite      = Sprite(m_Resources["solid_white"]);
-                auto&       sprite_comp = m_Chessboard.back().AddComponent<SpriteRendererComponent>(sprite);
+                auto&       sprite_comp = tile.AddComponent<SpriteRendererComponent>(sprite);
                 sprite_comp.GetSprite().SetSize({ m_TileSize, m_TileSize });
                 sprite_comp.GetSprite().GetColour() = (is_white) ? white_tile : black_tile;
             }
         }
+    }
+
+    void SceneManager::Reset(const std::string_view customFen)
+    {
+        // Fill the board with none's.
+        std::fill(m_Board.begin(), m_Board.end(), Piece::None);
+
+        // I hate this.
+        for (const auto& e : GameLayer::GetCurrentScene().GetAllEntities())
+            GameLayer::GetCurrentScene().RemoveEntity(e);
+
+        m_EatenWhitePawns = 0;
+        m_EatenBlackPawns = 0;
+        m_WhitesTurn      = true;
+
+        CreateBoard();
+        CreatePieces(customFen);
     }
 
     codex::Entity SceneManager::CreatePiece(const char piece, const bool is_white, const Vector3f pos)
@@ -173,7 +282,9 @@ namespace chx {
         entity = CreateEntity(fmt::format("{}_{},{}", (is_white) ? (char)std::toupper(piece) : piece, pos.x, pos.y));
         entity.GetComponent<TransformComponent>().position = { m_TileSize / 2 + pos.x * m_TileSize,
                                                                m_TileSize / 2 + pos.y * m_TileSize, 0.0f };
-        entity.AddComponent<NativeBehaviourComponent>().New<pawn::Pawn>();
+        
+        auto& nbc          = entity.AddComponent<NativeBehaviourComponent>();
+        pawn::Pawn* script{};
 
         Piece type = Piece::None;
 
@@ -185,33 +296,48 @@ namespace chx {
                 type                      = Piece::King;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)type, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::King>();
                 break;
             case 'q':
                 type                      = Piece::Queen;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)Piece::Queen, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::Queen>();
                 break;
             case 'b':
                 type                      = Piece::Bishop;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)Piece::Bishop, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::Bishop>();
                 break;
             case 'n':
                 type                      = Piece::Knight;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)Piece::Knight, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::Knight>();
                 break;
             case 'r':
                 type                      = Piece::Rook;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)Piece::Rook, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::Rook>();
                 break;
             case 'p':
                 type                      = Piece::Pawn;
                 sprite.GetTextureCoords() = { piece_tile_size * (f32)Piece::Pawn, (is_white) ? 0.0f : piece_tile_size,
                                               piece_tile_size, piece_tile_size };
+                script                    = &nbc.New<pawn::Pawn>();
                 break;
         }
+
+        if (script)
+        {
+            script->m_BoardSize = m_BoardSize;
+            script->m_Board     = &m_Board;
+            script->m_Pos       = { pos.x, pos.y };
+            script->m_IsWhite   = is_white;
+        }
+
         entity.AddComponent<SpriteRendererComponent>(sprite);
 
         m_Board[pos.y * m_BoardSize + pos.x] = (is_white) ? type : (Piece)(type | PieceColour::Black);
@@ -236,28 +362,28 @@ namespace chx {
         }
     }
 
-    SceneManager::MoveInfo SceneManager::ValidateMove(const Vector2 pos, const Vector2 target_pos) const noexcept
-    {
-        return { true, false };
-    }
-
     void SceneManager::TryMakeMove(Entity piece, const Vector2 pos, const Vector2 targetPos) noexcept
     {
         const Vector2 board_pos{ pos.x / m_TileSize, pos.y / m_TileSize };
         const Vector2 target_board_pos{ targetPos.x / m_TileSize, targetPos.y / m_TileSize };
         const auto    type        = m_Board[board_pos.y * m_BoardSize + board_pos.x];
         const auto    target_type = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x];
-        const auto    move_info   = ValidateMove(pos, target_board_pos);
         auto&         piece_pos   = piece.GetComponent<TransformComponent>().position;
+        const auto bh = (pawn::Pawn*)piece.GetComponent<NativeBehaviourComponent>().behaviours.begin()->second.Get();
+        const bool    eatable = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x] != Piece::None;
 
-        if (move_info.valid)
+        if (bh->CanProceed(target_board_pos, eatable))
         {
-            if (move_info.doesEat)
+            if (eatable)
             {
-                const auto fmt    = fmt::format("{}_{},{}", PieceTypeToChar(target_type), pos.x, pos.y);
+                const auto fmt =
+                    fmt::format("{}_{},{}", PieceTypeToChar(target_type), target_board_pos.x, target_board_pos.y);
                 const auto target = GameLayer::GetCurrentScene().GetAllEntitesWithTag(fmt);
 
-                fmt::println("Eating entity: {}", fmt);
+                if (m_WhitesTurn)
+                    ++m_EatenBlackPawns;
+                else
+                    ++m_EatenWhitePawns;
 
                 // Not using m_WhitePieces and m_BlackPieces so whatever I assume.
                 GameLayer::GetCurrentScene().RemoveEntity(target[0]);
@@ -267,9 +393,13 @@ namespace chx {
             piece.GetComponent<TagComponent>().tag =
                 fmt::format("{}_{},{}", PieceTypeToChar(type), target_board_pos.x, target_board_pos.y);
 
-            // Update the new position.
+            // Update the new position (inside the scene).
             piece_pos.x = targetPos.x;
             piece_pos.y = targetPos.y;
+
+            // Update the new position (inside the board).
+            bh->m_Pos = target_board_pos;
+            ++bh->m_MoveCount;
 
             // Update the piece inside the board.
             m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x] = type;

@@ -48,7 +48,7 @@ codex::Application* codex::CreateApplication(codex::ApplicationCLIArgs args)
         .windowProperties = { .title    = "Chessodex",
                               .width    = 800,
                               .height   = 520,
-                              .frameCap = 300,
+                              .frameCap = 60,
                               .flags    = codex::WindowFlags::Visible,
                               .vsync    = false } } };
 }

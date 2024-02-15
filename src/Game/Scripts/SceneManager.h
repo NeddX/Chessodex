@@ -40,7 +40,7 @@ namespace chx {
         codex::f32                                                                 m_TileSize = 60.0f;
         codex::u32                                                                 m_BoardSize = 8;
         std::array<Piece, 8 * 8>                                                   m_Board;
-        bool                                                                       m_WhitesTurn = false;
+        bool                                                                       m_WhitesTurn = true;
 
     private:
         void          Init();

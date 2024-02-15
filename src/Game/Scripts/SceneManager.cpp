@@ -173,8 +173,7 @@ namespace chx {
         entity = CreateEntity(fmt::format("{}_{},{}", (is_white) ? (char)std::toupper(piece) : piece, pos.x, pos.y));
         entity.GetComponent<TransformComponent>().position = { m_TileSize / 2 + pos.x * m_TileSize,
                                                                m_TileSize / 2 + pos.y * m_TileSize, 0.0f };
-
-        // entity.AddComponent<NativeBehaviourComponent>().New<pawn::Pawn>();
+        entity.AddComponent<NativeBehaviourComponent>().New<pawn::Pawn>();
 
         Piece type = Piece::None;
 

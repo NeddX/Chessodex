@@ -12,5 +12,6 @@ namespace chx::pawn {
 
     void Pawn::Update(const f32 deltaTime)
     {
+
     }
 } // namespace chx::pawn

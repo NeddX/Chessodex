@@ -72,18 +72,21 @@ namespace chx {
                 ImGui::NextColumn();
 
                 auto& colour = m_WhiteTiles[0].GetComponent<SpriteRendererComponent>().GetSprite().GetColour();
-                ImGuiColorEditFlags flags = 0;
-                flags |= ImGuiColorEditFlags_AlphaBar;
-                flags |= ImGuiColorEditFlags_DisplayRGB; // Override display mode
-                f32 temp_colour[4]{ colour.x, colour.y, colour.z, colour.w };
-                ImGui::ColorPicker4("##wtile_colour_picker", temp_colour, flags);
-                Vector4f res = glm::make_vec4(temp_colour);
-                if (res != colour)
+                
+                if (!m_WhiteTiles.empty())
                 {
-                    for (auto& e : m_WhiteTiles)
-                        e.GetComponent<SpriteRendererComponent>().GetSprite().GetColour() = res;
+                    ImGuiColorEditFlags flags = 0;
+                    flags |= ImGuiColorEditFlags_AlphaBar;
+                    flags |= ImGuiColorEditFlags_DisplayRGB; // Override display mode
+                    f32 temp_colour[4]{ colour.x, colour.y, colour.z, colour.w };
+                    ImGui::ColorPicker4("##wtile_colour_picker", temp_colour, flags);
+                    Vector4f res = glm::make_vec4(temp_colour);
+                    if (res != colour)
+                    {
+                        for (auto& e : m_WhiteTiles)
+                            e.GetComponent<SpriteRendererComponent>().GetSprite().GetColour() = res;
+                    }
                 }
-
                 ImGui::Columns(1);
             }
 
@@ -95,6 +98,8 @@ namespace chx {
                 ImGui::Text("Black tile colour: ");
                 ImGui::NextColumn();
 
+                if (!m_BlackTiles.empty())
+                    {
                 auto& colour = m_BlackTiles[0].GetComponent<SpriteRendererComponent>().GetSprite().GetColour();
                 ImGuiColorEditFlags flags = 0;
                 flags |= ImGuiColorEditFlags_AlphaBar;
@@ -106,6 +111,7 @@ namespace chx {
                 {
                     for (auto& e : m_BlackTiles)
                         e.GetComponent<SpriteRendererComponent>().GetSprite().GetColour() = res;
+                }
                 }
 
                 ImGui::Columns(1);
@@ -265,6 +271,8 @@ namespace chx {
         for (const auto& e : GameLayer::GetCurrentScene().GetAllEntities())
             GameLayer::GetCurrentScene().RemoveEntity(e);
 
+        m_WhiteTiles.clear();
+        m_BlackTiles.clear();
         m_EatenWhitePawns = 0;
         m_EatenBlackPawns = 0;
         m_WhitesTurn      = true;

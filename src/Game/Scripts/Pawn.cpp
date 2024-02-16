@@ -7,12 +7,10 @@ namespace chx::pawn {
 
     void Pawn::Init()
     {
-
     }
 
     void Pawn::Update(const f32 deltaTime)
     {
-
     }
 
     bool Pawn::CanProceed(const Vector2 targetPos, const bool eatable) const

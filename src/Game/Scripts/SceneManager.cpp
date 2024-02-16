@@ -282,8 +282,8 @@ namespace chx {
         entity = CreateEntity(fmt::format("{}_{},{}", (is_white) ? (char)std::toupper(piece) : piece, pos.x, pos.y));
         entity.GetComponent<TransformComponent>().position = { m_TileSize / 2 + pos.x * m_TileSize,
                                                                m_TileSize / 2 + pos.y * m_TileSize, 0.0f };
-        
-        auto& nbc          = entity.AddComponent<NativeBehaviourComponent>();
+
+        auto&       nbc = entity.AddComponent<NativeBehaviourComponent>();
         pawn::Pawn* script{};
 
         Piece type = Piece::None;
@@ -369,7 +369,7 @@ namespace chx {
         const auto    type        = m_Board[board_pos.y * m_BoardSize + board_pos.x];
         const auto    target_type = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x];
         auto&         piece_pos   = piece.GetComponent<TransformComponent>().position;
-        const auto bh = (pawn::Pawn*)piece.GetComponent<NativeBehaviourComponent>().behaviours.begin()->second.Get();
+        const auto    bh = (pawn::Pawn*)piece.GetComponent<NativeBehaviourComponent>().behaviours.begin()->second.Get();
         const bool    eatable = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x] != Piece::None;
 
         if (bh->CanProceed(target_board_pos, eatable))

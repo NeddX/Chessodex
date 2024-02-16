@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Scripts/SceneManager.h"
 #include <Codex.h>
 #include <CommonDef.h>
 #include <filesystem>
-#include "Scripts/SceneManager.h"
 
 namespace chx {
     class GameLayer : public codex::Layer

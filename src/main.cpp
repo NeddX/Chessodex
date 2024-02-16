@@ -19,8 +19,7 @@ namespace chx {
         m_AppDataPath = fs::path(CHX_INSTALL_DIR) / fs::path("bin");
 #endif
 
-        m_VarAppDataPath =
-            fs::path(GetSpecialFolder(SpecialFolder::UserApplicationData)) / fs::path("Chessodex/");
+        m_VarAppDataPath = fs::path(GetSpecialFolder(SpecialFolder::UserApplicationData)) / fs::path("Chessodex/");
 
         if (!fs::exists(m_VarAppDataPath))
         {
@@ -41,14 +40,13 @@ namespace chx {
 
 codex::Application* codex::CreateApplication(codex::ApplicationCLIArgs args)
 {
-    return new chx::Chessodex{ codex::ApplicationProperties{
-        .name             = "Chessodex",
-        .cwd              = "./",
-        .args             = std::move(args),
-        .windowProperties = { .title    = "Chessodex",
-                              .width    = 800,
-                              .height   = 520,
-                              .frameCap = 60,
-                              .flags    = codex::WindowFlags::Visible,
-                              .vsync    = false } } };
+    return new chx::Chessodex{ codex::ApplicationProperties{ .name             = "Chessodex",
+                                                             .cwd              = "./",
+                                                             .args             = std::move(args),
+                                                             .windowProperties = { .title    = "Chessodex",
+                                                                                   .width    = 800,
+                                                                                   .height   = 520,
+                                                                                   .frameCap = 60,
+                                                                                   .flags = codex::WindowFlags::Visible,
+                                                                                   .vsync = false } } };
 }

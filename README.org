@@ -1,0 +1,53 @@
+#+author: Neddiendrohu
+#+title: Chessodex
+
+* Overview
+Welcome to Chessodex - a chess implementation built using the Codex2D custom game engine made also by me. This project showcases the capabilities of Codex2D, a custom 2D cross-platform game engine written in C++ with OpenGL. The engine provides features such as sprite rendering, Entity-Component-System (ECS) architecture, serialization, GUI with ImGUI, and native C++ scripting.
+The chess implementation is very straight forward and follows the basic chess rules. You can drag and drop the pieces and on each move made, the turn changes. It also allows for customizing the board colours
+and can load FEN strings.
+
+* Features
+- Chess implementation with basic chess rules.
+- Customizable chess scenarios using FEN strings.
+- Tile color customization for a personalized gaming experience.
+- Cross-platform support.
+
+* Prerequisites for building from source
+Before building the project, ensure you have the following tools installed:
+
+- CMake 3.20 or higher
+- Clang 16 or higher (or GCC 13 or higher)
+- Ninja 1.11 or higher
+- Visual Studio 17 or higher (for Windows, with CMake and Ninja components installed)
+
+** Building the Project
+*** Unix like (Linux, OSX, FreeBSD...)
+1. Run the provided Python script to list available presets:
+#+begin_src bash
+./build.py list
+#+end_src
+
+2. Choose a preset from the list.
+    - Available presets:
+        1. =debug=: For debugging. Installs the game under =installs/<os>-<arch>-debug/= folder inside the project root folder.
+        2. =release=: Minimal debug information. Installs the game under =installs/<os>-<arch>-release/= folder inside the project root folder.
+        3. =shipping=: For packaging. Installs the game under =/usr/local/= (On Unix like systems) or =C:/Program Files (x86)/= on Windows.
+
+    - An example preset would be:
+      #+begin_src bash
+./build.py --preset=linux-x86_64-debug
+      #+end_src
+
+3. Build the project using the selected preset:
+#+begin_src bash
+./build.py --preset=<preset name>
+#+end_src
+
+*** Windows
+Open the root =CMakeLists.txt= file in Visual Studio, select the preset from the top centre
+and build.
+For installation click on =Install Chessodex= under =build=.
+
+** Usage
+After building and installing the project, you can run the Chessodex.
+You can drag and drop the pieces and on every turn made, the turn changes.

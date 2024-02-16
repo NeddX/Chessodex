@@ -9,9 +9,9 @@ namespace chx {
     CODEX_USE_ALL_NAMESPACES()
 
     class Chessodex : public codex::Application
-	{
+    {
     private:
-		static std::filesystem::path m_AppDataPath;
+        static std::filesystem::path m_AppDataPath;
         static std::filesystem::path m_VarAppDataPath;
 
     public:

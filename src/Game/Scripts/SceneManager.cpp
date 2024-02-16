@@ -41,6 +41,10 @@ namespace chx {
         }
         return (!c) ? c : (is_white) ? std::toupper(c) : c;
     }
+    SceneManager::PieceColour GetPieceColour(const SceneManager::Piece piece) noexcept
+    {
+        return (SceneManager::PieceColour)(piece & ~(1 << sizeof(SceneManager::Piece) - 1));
+    }
 
     void SceneManager::Init()
     {
@@ -378,15 +382,23 @@ namespace chx {
         const auto    target_type = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x];
         auto&         piece_pos   = piece.GetComponent<TransformComponent>().position;
         const auto    bh = (pawn::Pawn*)piece.GetComponent<NativeBehaviourComponent>().behaviours.begin()->second.Get();
-        const bool    eatable = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x] != Piece::None;
+        const auto    self    = m_Board[board_pos.y * m_BoardSize + board_pos.x];  
+        const auto    target  = m_Board[target_board_pos.y * m_BoardSize + target_board_pos.x];
+        const bool    eatable = target != Piece::None;
 
         if (bh->CanProceed(target_board_pos, eatable))
         {
             if (eatable)
             {
+                if (GetPieceColour(self) == GetPieceColour(target))
+                {
+                    piece_pos.x = pos.x, piece_pos.y = pos.y;
+                    return;
+                }
+
                 const auto fmt =
                     fmt::format("{}_{},{}", PieceTypeToChar(target_type), target_board_pos.x, target_board_pos.y);
-                const auto target = GameLayer::GetCurrentScene().GetAllEntitesWithTag(fmt);
+                const auto target_entity = GameLayer::GetCurrentScene().GetAllEntitesWithTag(fmt)[0];
 
                 if (m_WhitesTurn)
                     ++m_EatenBlackPawns;
@@ -394,7 +406,7 @@ namespace chx {
                     ++m_EatenWhitePawns;
 
                 // Not using m_WhitePieces and m_BlackPieces so whatever I assume.
-                GameLayer::GetCurrentScene().RemoveEntity(target[0]);
+                GameLayer::GetCurrentScene().RemoveEntity(target_entity);
             }
 
             // Update the tag.

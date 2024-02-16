@@ -9,7 +9,7 @@ It also allows for customization and the ability to load FEN strings.
 * Features
 - Chess implementation with basic chess rules.
 - Customizable chess scenarios using FEN strings.
-- Tile color customization for a personalized gaming experience.
+- Tile color customization for a personalized experience.
 - Cross-platform support.
 
 * Prerequisites for building from source
@@ -22,12 +22,17 @@ Before building the project, ensure you have the following tools installed:
 
 ** Building the Project
 *** Unix like (Linux, OSX, FreeBSD...)
-1. Run the provided Python script to list available presets:
+1. Clone the repo with:
 #+begin_src bash
+git clone --recursive https://github.com/NeddX/Chessodex
+#+end_src
+
+2. Run the provided Python script to list available presets:
+,#+begin_src bash
 ./build.py list
 #+end_src
 
-2. Choose a preset from the list.
+3. Choose a preset from the list.
     - Available presets:
         1. =debug=: For debugging. Installs the game under =installs/<os>-<arch>-debug= folder inside the project root folder.
         2. =release=: Minimal debug information. Installs the game under =installs/<os>-<arch>-release= folder inside the project root folder.
@@ -38,9 +43,21 @@ Before building the project, ensure you have the following tools installed:
       ./build.py --preset=linux-x86_64-debug
       #+end_src
 
-3. Build the project using the selected preset:
+4. Build the project using the selected preset:
 #+begin_src bash
 ./build.py --preset=<preset name>
+#+end_src
+
+**** Ubuntu 23.10 mantic (or Ubuntu based)
+On Ubuntu, you will first need the following packages installed:
+#+begin_src bash
+sudo apt install python3 git cmake clang libglu1-mesa-dev libxext-dev libasound2-dev build-essential -y
+#+end_src
+
+**** Arch (or Arch based)
+On Arch, you will first need the following packages installed:
+#+begin_src bash
+sudo pacamn -S python3 git cmake clang mesa base-devel --noconfirm
 #+end_src
 
 *** Windows
@@ -52,12 +69,12 @@ For installation click on =Install Chessodex= under =build=.
 *** Unix like (Linux, OSX, FreeBSD...)
 On Unix like systems run the =build.py= script with the =shipping= preset which will install the
 game under =/usr/local=.
-For example to install on a AMD64 Linux system you would do:
+For example to install on an AMD64 Linux system you would do:
 #+begin_src bash
 ./build.py --preset=linux-x86_64-shipping --install
 #+end_src
 
-For uninstallation CMake generates an =install_manifest.txt= file under the =builds/<selected preset>/= folder which contains all the files and folders that have been created so you can do:
+For uninstallation, CMake generates an =install_manifest.txt= file under the =builds/<selected preset>= folder which contains all the files and folders that have been installed so you can do:
 #+begin_src bash
 sudo xargs rm < install_manifest.txt
 #+end_src
@@ -65,10 +82,10 @@ sudo xargs rm < install_manifest.txt
 You might also want to delete the folders assosicated with Chessodex under =~/.config/= folder.
 
 *** Windows
-To install on Windows just select the =shipping= preset and hit the =Install Chessodex= under =Build=.
-This will install the game under =C:/Program Files (x86)/Chessodex=.
+To install on Windows, just select the =shipping= preset in Visual Studio and hit the =Install Chessodex= under =Build=, this will install the game under =C:/Program Files (x86)/Chessodex=.
 
-For uninstallation on Windows just delete the folder =C:/Program Files (x86)/Chessodex= and you migth also want to delete the folders assosicated with Chessodex =%LOCALAPPDATA%=.
+For uninstallation on Windows, just delete the folder =C:/Program Files (x86)/Chessodex=.
+You migth also want to delete the folders assosicated with Chessodex under =%LOCALAPPDATA%=.
 
 ** Usage
 After building and installing the project, you can run the Chessodex.

@@ -29,9 +29,9 @@ Before building the project, ensure you have the following tools installed:
 
 2. Choose a preset from the list.
     - Available presets:
-        1. =debug=: For debugging. Installs the game under =installs/<os>-<arch>-debug/= folder inside the project root folder.
-        2. =release=: Minimal debug information. Installs the game under =installs/<os>-<arch>-release/= folder inside the project root folder.
-        3. =shipping=: For packaging. Installs the game under =/usr/local/= (On Unix like systems) or =C:/Program Files (x86)/= on Windows.
+        1. =debug=: For debugging. Installs the game under =installs/<os>-<arch>-debug= folder inside the project root folder.
+        2. =release=: Minimal debug information. Installs the game under =installs/<os>-<arch>-release= folder inside the project root folder.
+        3. =shipping=: For packaging. Installs the game under =/usr/local= (On Unix like systems) or =C:/Program Files (x86)= on Windows.
 
     - An example preset would be:
       #+begin_src bash
@@ -51,7 +51,7 @@ For installation click on =Install Chessodex= under =build=.
 ** Installation
 *** Unix like (Linux, OSX, FreeBSD...)
 On Unix like systems run the =build.py= script with the =shipping= preset which will install the
-game under =/usr/local/=.
+game under =/usr/local=.
 For example to install on a AMD64 Linux system you would do:
 #+begin_src bash
 ./build.py --preset=linux-x86_64-shipping --install
@@ -65,7 +65,10 @@ sudo xargs rm < install_manifest.txt
 You might also want to delete the folders assosicated with Chessodex under =~/.config/= folder.
 
 *** Windows
-On Windows just delete the folder =C:/Program Files (x86)/Chessodex= and you migth also want to delete the folders assosicated with Chessodex =%LOCALAPPDATA%=.
+To install on Windows just select the =shipping= preset and hit the =Install Chessodex= under =Build=.
+This will install the game under =C:/Program Files (x86)/Chessodex=.
+
+For uninstallation on Windows just delete the folder =C:/Program Files (x86)/Chessodex= and you migth also want to delete the folders assosicated with Chessodex =%LOCALAPPDATA%=.
 
 ** Usage
 After building and installing the project, you can run the Chessodex.

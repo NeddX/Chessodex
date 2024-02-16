@@ -3,8 +3,8 @@
 
 * Overview
 Welcome to Chessodex - a chess implementation built using the Codex2D custom game engine made also by me. This project showcases the capabilities of Codex2D, a custom 2D cross-platform game engine written in C++ with OpenGL. The engine provides features such as sprite rendering, Entity-Component-System (ECS) architecture, serialization, GUI with ImGUI, and native C++ scripting.
-The chess implementation is very straight forward and follows the basic chess rules. You can drag and drop the pieces and on each move made, the turn changes. It also allows for customizing the board colours
-and can load FEN strings.
+The chess implementation is very straight forward and follows the basic chess rules. You can drag and drop the pieces and on each move made, the turn changes.
+It also allows for customization and the ability to load FEN strings.
 
 * Features
 - Chess implementation with basic chess rules.
@@ -35,7 +35,7 @@ Before building the project, ensure you have the following tools installed:
 
     - An example preset would be:
       #+begin_src bash
-./build.py --preset=linux-x86_64-debug
+      ./build.py --preset=linux-x86_64-debug
       #+end_src
 
 3. Build the project using the selected preset:
@@ -47,6 +47,25 @@ Before building the project, ensure you have the following tools installed:
 Open the root =CMakeLists.txt= file in Visual Studio, select the preset from the top centre
 and build.
 For installation click on =Install Chessodex= under =build=.
+
+** Installation
+*** Unix like (Linux, OSX, FreeBSD...)
+On Unix like systems run the =build.py= script with the =shipping= preset which will install the
+game under =/usr/local/=.
+For example to install on a AMD64 Linux system you would do:
+#+begin_src bash
+./build.py --preset=linux-x86_64-shipping --install
+#+end_src
+
+For uninstallation CMake generates an =install_manifest.txt= file under the =builds/<selected preset>/= folder which contains all the files and folders that have been created so you can do:
+#+begin_src bash
+sudo xargs rm < install_manifest.txt
+#+end_src
+
+You might also want to delete the folders assosicated with Chessodex under =~/.config/= folder.
+
+*** Windows
+On Windows just delete the folder =C:/Program Files (x86)/Chessodex= and you migth also want to delete the folders assosicated with Chessodex =%LOCALAPPDATA%=.
 
 ** Usage
 After building and installing the project, you can run the Chessodex.

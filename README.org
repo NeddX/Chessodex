@@ -28,7 +28,7 @@ git clone --recursive https://github.com/NeddX/Chessodex
 #+end_src
 
 2. Run the provided Python script to list available presets:
-,#+begin_src bash
+#+begin_src bash
 ./build.py list
 #+end_src
 
